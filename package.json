@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "cldiffutils": "~1.0.0",
+    "cledit": "~1.0.0",
+    "clunderscore": "~1.0.0",
+    "prismjs": "0.0.1"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-watch": "^4.3.5",
+    "streamqueue": "^1.1.1"
+  }
+}
