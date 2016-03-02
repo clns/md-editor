@@ -60,38 +60,40 @@ clEditorSvc.cledit.on('contentChanged', function (content, sectionList) {
 
 clEditorSvc.initCledit(clEditorSvc.options);
 
-Keystrokes(clEditorSvc)
+Keystrokes(clEditorSvc);
 
 
 // Preview
 
-var appUri = ''
-clEditorSvc.setPreviewElt(document.querySelector('.preview__inner'))
-var previewElt = document.querySelector('.preview')
-clEditorSvc.isPreviewTop = previewElt.scrollTop < 10
-previewElt.addEventListener('scroll', function () {
-  var isPreviewTop = previewElt.scrollTop < 10
-  if (isPreviewTop !== clEditorSvc.isPreviewTop) {
-    clEditorSvc.isPreviewTop = isPreviewTop
-  }
-})
-previewElt.addEventListener('click', function (evt) {
-  var elt = evt.target
-  while (elt !== previewElt) {
-    if (elt.href) {
-      if (elt.href.match(/^https?:\/\//) && elt.href.slice(0, appUri.length) !== appUri) {
-        evt.preventDefault()
-        var wnd = window.open(elt.href, '_blank')
-        return wnd.focus()
-      }
+(function() {
+  var appUri = ''
+  clEditorSvc.setPreviewElt(document.querySelector('.preview__inner'))
+  var previewElt = document.querySelector('.preview')
+  clEditorSvc.isPreviewTop = previewElt.scrollTop < 10
+  previewElt.addEventListener('scroll', function () {
+    var isPreviewTop = previewElt.scrollTop < 10
+    if (isPreviewTop !== clEditorSvc.isPreviewTop) {
+      clEditorSvc.isPreviewTop = isPreviewTop
     }
-    elt = elt.parentNode
-  }
-})
+  })
+  previewElt.addEventListener('click', function (evt) {
+    var elt = evt.target
+    while (elt !== previewElt) {
+      if (elt.href) {
+        if (elt.href.match(/^https?:\/\//) && elt.href.slice(0, appUri.length) !== appUri) {
+          evt.preventDefault()
+          var wnd = window.open(elt.href, '_blank')
+          return wnd.focus()
+        }
+      }
+      elt = elt.parentNode
+    }
+  })
+})();
 
 
 // Content
 
-$.get('issue.md', function(data) {
+$.get('content.md', function(data) {
   clEditorSvc.setContent(data)
 })

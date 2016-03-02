@@ -2444,7 +2444,7 @@ this['DIFF_EQUAL'] = DIFF_EQUAL;
   }
 
   function applyFlattenedObjectPatchesReverse (obj, patches) {
-    patches && patches.cl_each(function (patch) {
+    patches && patches.slice().reverse().cl_each(function (patch) {
       if (patch.d) {
         obj[patch.k] = patch.d
       } else if (patch.a) {
@@ -2466,7 +2466,7 @@ this['DIFF_EQUAL'] = DIFF_EQUAL;
   }
 
   function applyFlattenedTextPatchesReverse (text, patches) {
-    return (patches || []).cl_reduce(function (text, patch) {
+    return (patches || []).slice().reverse().cl_reduce(function (text, patch) {
       if (patch.d) {
         return text.slice(0, patch.o).concat(patch.d).concat(text.slice(patch.o))
       } else if (patch.a) {
@@ -18352,11 +18352,11 @@ clEditorSvc.getPandocAst = function () {
   }
 
   var lowercase = function(s) {
-    return typeof(s) == 'string' ? s.toLowerCase() : undefined;
+    return typeof(s) == 'string' ? s.toLowerCase() : s;
   }
 
   var forEach = function(a, cb) {
-    return typeof(a) == 'object' && a.forEach ? a.forEach(cb) : undefined;
+    return a && a.cl_each ? a.cl_each(cb) : undefined;
   }
 
 
@@ -18726,7 +18726,8 @@ clEditorSvc.getPandocAst = function () {
 
   buf = [];
   htmlParser(html, htmlSanitizeWriter(buf, function(uri, isImage) {
-    return !/^unsafe/.test($$sanitizeUri(uri, isImage));
+    return true;
+    // return !/^unsafe/.test($$sanitizeUri(uri, isImage));
   }));
   return buf.join('');
 }
@@ -20594,39 +20595,42 @@ clEditorSvc.cledit.on('contentChanged', function (content, sectionList) {
 
 clEditorSvc.initCledit(clEditorSvc.options);
 
-Keystrokes(clEditorSvc)
+Keystrokes(clEditorSvc);
 
 
 // Preview
 
-var appUri = ''
-clEditorSvc.setPreviewElt(document.querySelector('.preview__inner'))
-var previewElt = document.querySelector('.preview')
-clEditorSvc.isPreviewTop = previewElt.scrollTop < 10
-previewElt.addEventListener('scroll', function () {
-  var isPreviewTop = previewElt.scrollTop < 10
-  if (isPreviewTop !== clEditorSvc.isPreviewTop) {
-    clEditorSvc.isPreviewTop = isPreviewTop
-  }
-})
-previewElt.addEventListener('click', function (evt) {
-  var elt = evt.target
-  while (elt !== previewElt) {
-    if (elt.href) {
-      if (elt.href.match(/^https?:\/\//) && elt.href.slice(0, appUri.length) !== appUri) {
-        evt.preventDefault()
-        var wnd = window.open(elt.href, '_blank')
-        return wnd.focus()
-      }
+(function() {
+  var appUri = ''
+  clEditorSvc.setPreviewElt(document.querySelector('.preview__inner'))
+  var previewElt = document.querySelector('.preview')
+  clEditorSvc.isPreviewTop = previewElt.scrollTop < 10
+  previewElt.addEventListener('scroll', function () {
+    var isPreviewTop = previewElt.scrollTop < 10
+    if (isPreviewTop !== clEditorSvc.isPreviewTop) {
+      clEditorSvc.isPreviewTop = isPreviewTop
     }
-    elt = elt.parentNode
-  }
-})
+  })
+  previewElt.addEventListener('click', function (evt) {
+    var elt = evt.target
+    while (elt !== previewElt) {
+      if (elt.href) {
+        if (elt.href.match(/^https?:\/\//) && elt.href.slice(0, appUri.length) !== appUri) {
+          evt.preventDefault()
+          var wnd = window.open(elt.href, '_blank')
+          return wnd.focus()
+        }
+      }
+      elt = elt.parentNode
+    }
+  })
+})();
 
 
 // Content
 
-$.get('issue.md', function(data) {
+$.get('content.md', function(data) {
   clEditorSvc.setContent(data)
 })
+
 //# sourceMappingURL=app-min.js.map

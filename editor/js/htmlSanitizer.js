@@ -26,11 +26,11 @@ var clHtmlSanitizer = function(html) {
   }
 
   var lowercase = function(s) {
-    return typeof(s) == 'string' ? s.toLowerCase() : undefined;
+    return typeof(s) == 'string' ? s.toLowerCase() : s;
   }
 
   var forEach = function(a, cb) {
-    return typeof(a) == 'object' && a.forEach ? a.forEach(cb) : undefined;
+    return a && a.cl_each ? a.cl_each(cb) : undefined;
   }
 
 
@@ -400,7 +400,8 @@ var clHtmlSanitizer = function(html) {
 
   buf = [];
   htmlParser(html, htmlSanitizeWriter(buf, function(uri, isImage) {
-    return !/^unsafe/.test($$sanitizeUri(uri, isImage));
+    return true;
+    // return !/^unsafe/.test($$sanitizeUri(uri, isImage));
   }));
   return buf.join('');
 }
