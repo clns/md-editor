@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "bezier-easing": "~1.1.1",
+    "clanim": "~0.1.0",
     "classets": "^1.0.3",
     "cldiffutils": "~1.0.0",
     "cledit": "~1.0.0",

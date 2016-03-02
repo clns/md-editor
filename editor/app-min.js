@@ -1,4 +1,179 @@
-/**
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var t;t="undefined"!=typeof window?window:"undefined"!=typeof global?global:"undefined"!=typeof self?self:this,t.BezierEasing=e()}}(function(){return function e(t,n,r){function i(s,u){if(!n[s]){if(!t[s]){var a="function"==typeof require&&require;if(!u&&a)return a(s,!0);if(o)return o(s,!0);var f=new Error("Cannot find module '"+s+"'");throw f.code="MODULE_NOT_FOUND",f}var p=n[s]={exports:{}};t[s][0].call(p.exports,function(e){var n=t[s][1][e];return i(n?n:e)},p,p.exports,e,t,n,r)}return n[s].exports}for(var o="function"==typeof require&&require,s=0;s<r.length;s++)i(r[s]);return i}({1:[function(e,t){function n(e,t){return 1-3*t+3*e}function r(e,t){return 3*t-6*e}function i(e){return 3*e}function o(e,t,o){return((n(t,o)*e+r(t,o))*e+i(t))*e}function s(e,t,o){return 3*n(t,o)*e*e+2*r(t,o)*e+i(t)}function u(e,t,n,r,i){var s,u,a=0;do u=t+(n-t)/2,s=o(u,r,i)-e,s>0?n=u:t=u;while(Math.abs(s)>h&&++a<l);return u}function a(e,t,n,r){for(var i=0;p>i;++i){var u=s(t,n,r);if(0===u)return t;var a=o(t,n,r)-e;t-=a/u}return t}function f(e,t,n,r){if(4===arguments.length)return new f([e,t,n,r]);if(!(this instanceof f))return new f(e);if(!e||4!==e.length)throw new Error("BezierEasing: points must contains 4 values");for(var i=0;4>i;++i)if("number"!=typeof e[i]||isNaN(e[i])||!isFinite(e[i]))throw new Error("BezierEasing: points should be integers.");if(e[0]<0||e[0]>1||e[2]<0||e[2]>1)throw new Error("BezierEasing x values must be in [0, 1] range.");this._str="BezierEasing("+e+")",this._css="cubic-bezier("+e+")",this._p=e,this._mSampleValues=m?new Float32Array(_):new Array(_),this._precomputed=!1,this.get=this.get.bind(this)}var p=4,c=.001,h=1e-7,l=10,_=11,d=1/(_-1),m="function"==typeof Float32Array;f.prototype={get:function(e){var t=this._p[0],n=this._p[1],r=this._p[2],i=this._p[3];return this._precomputed||this._precompute(),t===n&&r===i?e:0===e?0:1===e?1:o(this._getTForX(e),n,i)},getPoints:function(){return this._p},toString:function(){return this._str},toCSS:function(){return this._css},_precompute:function(){var e=this._p[0],t=this._p[1],n=this._p[2],r=this._p[3];this._precomputed=!0,(e!==t||n!==r)&&this._calcSampleValues()},_calcSampleValues:function(){for(var e=this._p[0],t=this._p[2],n=0;_>n;++n)this._mSampleValues[n]=o(n*d,e,t)},_getTForX:function(e){for(var t=this._p[0],n=this._p[2],r=this._mSampleValues,i=0,o=1,f=_-1;o!==f&&r[o]<=e;++o)i+=d;--o;var p=(e-r[o])/(r[o+1]-r[o]),h=i+p*d,l=s(h,t,n);return l>=c?a(e,h,t,n):0===l?h:u(e,i,i+d,t,n)}},f.css={ease:f.ease=f(.25,.1,.25,1),linear:f.linear=f(0,0,1,1),"ease-in":f.easeIn=f(.42,0,1,1),"ease-out":f.easeOut=f(0,0,.58,1),"ease-in-out":f.easeInOut=f(.42,0,.58,1)},t.exports=f},{}]},{},[1])(1)});;(function() {
+    var vendors = ['moz', 'webkit'];
+    for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
+    }
+
+    function identity(x) {
+        return x;
+    }
+
+    function ElementAttribute(name) {
+        this.name = name;
+        this.setStart = function(animation) {
+            var value = animation.elt[name];
+            animation.$start[name] = value;
+            return value !== undefined && animation.$end[name] !== undefined;
+        };
+        this.applyCurrent = function(animation) {
+            animation.elt[name] = animation.$current[name];
+        };
+    }
+
+    function StyleAttribute(name, unit, defaultValue, wrap) {
+        wrap = wrap || identity;
+        this.name = name;
+        this.setStart = function(animation) {
+            var value = parseFloat(animation.elt.style[name]);
+            if (isNaN(value)) {
+                value = animation.$current[name] || defaultValue;
+            }
+            animation.$start[name] = value;
+            return animation.$end[name] !== undefined;
+        };
+        this.applyCurrent = function(animation) {
+            animation.elt.style[name] = wrap(animation.$current[name]) + unit;
+        };
+    }
+
+    function TransformAttribute(name, unit, defaultValue, wrap) {
+        wrap = wrap || identity;
+        this.name = name;
+        this.setStart = function(animation) {
+            var value = animation.$current[name];
+            if (value === undefined) {
+                value = defaultValue;
+            }
+            animation.$start[name] = value;
+            if (animation.$end[name] === undefined) {
+                animation.$end[name] = value;
+            }
+            return value !== undefined;
+        };
+        this.applyCurrent = function(animation) {
+            var value = animation.$current[name];
+            return value !== defaultValue && name + '(' + wrap(value) + unit + ')';
+        };
+    }
+
+    var attributes = [
+        new ElementAttribute('scrollTop'),
+        new ElementAttribute('scrollLeft'),
+        new StyleAttribute('opacity', '', 1),
+        new StyleAttribute('zIndex', '', 0),
+        new TransformAttribute('translateX', 'px', 0, Math.round),
+        new TransformAttribute('translateY', 'px', 0, Math.round),
+        new TransformAttribute('scale', '', 1),
+        new TransformAttribute('rotate', 'deg', 0),
+    ].concat([
+        'width',
+        'height',
+        'top',
+        'right',
+        'bottom',
+        'left'
+    ].map(function(name) {
+        return new StyleAttribute(name, 'px', 0, Math.round);
+    }));
+
+    function Animation(elt) {
+        this.elt = elt;
+        this.$current = {};
+        this.$pending = {};
+    }
+
+    attributes.map(function(attribute) {
+        return attribute.name;
+    }).concat('duration', 'easing', 'delay').forEach(function(name) {
+        Animation.prototype[name] = function(val) {
+            this.$pending[name] = val;
+            return this;
+        };
+    });
+
+    Animation.prototype.start = function(endCb, stepCb) {
+        var animation = this;
+        animation.stop();
+        animation.$start = {};
+        animation.$end = animation.$pending;
+        animation.$pending = {};
+        animation.$attributes = attributes.filter(function(attribute) {
+            return attribute.setStart(animation);
+        });
+        animation.$end.duration = animation.$end.duration || 0;
+        animation.$end.delay = animation.$end.delay || 0;
+        animation.$end.easing = window.BezierEasing.css[animation.$end.easing] || window.BezierEasing.css['ease-out'];
+        animation.$end.endCb = typeof endCb === 'function' && endCb;
+        animation.$end.stepCb = typeof stepCb === 'function' && stepCb;
+        animation.$startTime = Date.now() + animation.$end.delay;
+        animationLoop.call(animation, endCb === true);
+        return animation.elt;
+    };
+
+    Animation.prototype.stop = function() {
+        window.cancelAnimationFrame(this.$requestId);
+    };
+
+    function animationLoop(useTransition) {
+        var animation = this;
+        var progress = (Date.now() - animation.$startTime) / animation.$end.duration;
+        var transition = '';
+        if (useTransition && animation.$end.duration) {
+            progress = 1;
+            var transitions = [
+                'all',
+                animation.$end.duration + 'ms',
+                animation.$end.easing.toCSS()
+            ];
+            animation.$end.delay && transitions.push(animation.$end.delay + 'ms');
+            transition = transitions.join(' ');
+        } else if (progress < 1) {
+            animation.$requestId = window.requestAnimationFrame(animationLoop.bind(animation, false));
+            if (progress < 0) {
+                return;
+            }
+        } else if (animation.$end.endCb) {
+            animation.$requestId = window.requestAnimationFrame(animation.$end.endCb);
+        }
+
+        var coeff = animation.$end.easing.get(progress);
+        var transforms = animation.$attributes.reduce(function(transforms, attribute) {
+            if (progress < 1) {
+                var diff = animation.$end[attribute.name] - animation.$start[attribute.name];
+                animation.$current[attribute.name] = animation.$start[attribute.name] + diff * coeff;
+            } else {
+                animation.$current[attribute.name] = animation.$end[attribute.name];
+            }
+            var transform = attribute.applyCurrent(animation);
+            return transform && transforms.push(transform), transforms;
+        }, []);
+
+        transforms.length && transforms.push('translateZ(0)'); // activate GPU
+        var transform = transforms.join(' ');
+        animation.elt.style.WebkitTransform = transform;
+        animation.elt.style.MozTransform = transform;
+        animation.elt.style.transform = transform;
+        animation.elt.style.WebkitTransition = transition;
+        animation.elt.style.MozTransition = transition;
+        animation.elt.style.transition = transition;
+        animation.$end.stepCb && animation.$end.stepCb();
+    }
+
+    // Pattern: http://lea.verou.me/2015/04/idea-extending-native-dom-prototypes-without-collisions/
+    Object.defineProperty(window.Element.prototype, 'clanim', {
+        get: function() {
+            Object.defineProperty(this, 'clanim', {
+                value: new Animation(this)
+            });
+            return this.clanim;
+        },
+        configurable: true,
+        writeable: false
+    });
+
+})();
+;/**
  * Diff Match and Patch
  *
  * Copyright 2006 Google Inc.
@@ -17854,6 +18029,8 @@ var diffMatchPatch = new $window.diff_match_patch() // eslint-disable-line new-c
 var parsingCtx, conversionCtx,
   tokens
 
+var watchListeners = [];
+
 var clEditorSvc = {
 	lastExternalChange: 0,
   scrollOffset: 80,
@@ -17965,6 +18142,17 @@ var clEditorSvc = {
       }
       return clEditorSvc.cledit.setContent(content, isExternal)
     }
+  },
+  addWatchListener: function(cb) {
+    watchListeners.push(cb);
+    this.watchListeners = watchListeners;
+  },
+  triggerWatchAction: function(action) {
+    if (this.watchListeners) {
+      this.watchListeners.forEach(function(cb) {
+        cb.call(this, action);
+      }, this);
+    }
   }
 };
 
@@ -18013,6 +18201,7 @@ clEditorSvc.convert = function () {
     htmlSectionDiff: htmlSectionDiff
   }
   clEditorSvc.lastConversion = Date.now()
+  clEditorSvc.triggerWatchAction('lastConversion');
 }
 
 var anchorHash = {}
@@ -18124,6 +18313,7 @@ function runAsyncPreview () {
     clEditorSvc.previewHtml = html.replace(/^\s+|\s+$/g, '')
     clEditorSvc.previewText = previewElt.textContent
     clEditorSvc.lastPreviewRefreshed = Date.now()
+    clEditorSvc.triggerWatchAction('lastPreviewRefreshed');
     debouncedTextToPreviewDiffs()
     // $rootScope.$apply()
   }
@@ -18296,9 +18486,10 @@ clEditorSvc.measureSectionDimensions = function () {
 
   normalizeEditorDimensions()
   normalizePreviewDimensions()
-  normalizeTocDimensions()
+  // normalizeTocDimensions()
 
   clEditorSvc.lastSectionMeasured = Date.now()
+  clEditorSvc.triggerWatchAction('lastSectionMeasured')
 }
 
 clEditorSvc.scrollToAnchor = function (anchor) {
@@ -20533,6 +20724,197 @@ clEditorSvc.getPandocAst = function () {
 
 	return new Pagedown(options);
 }
+;var ScrollSync = function(clEditorSvc, editorElt, previewElt) {
+  var
+    editorFinishTimeoutId,
+    previewFinishTimeoutId,
+    skipAnimation,
+    isScrollEditor,
+    isScrollPreview,
+    isEditorMoving,
+    isPreviewMoving,
+    sectionDescList
+
+  var throttleTimeoutId
+  var throttleLastTime = 0
+
+  function throttle (func, wait) {
+    clearTimeout(throttleTimeoutId)
+    var currentTime = Date.now()
+    var localWait = wait + throttleLastTime - currentTime
+    throttleTimeoutId = setTimeout(function () {
+      throttleLastTime = Date.now()
+      func()
+    }, localWait < 1 ? 1 : localWait)
+  }
+
+  var doScrollSync = function () {
+    var localSkipAnimation = skipAnimation/* || !clEditorLayoutSvc.isSidePreviewOpen*/
+    skipAnimation = false
+    if (/*!clLocalSettingSvc.values.scrollSync || */!sectionDescList || sectionDescList.length === 0) {
+      return
+    }
+    var editorScrollTop = editorElt.scrollTop
+    editorScrollTop < 0 && (editorScrollTop = 0)
+    var previewScrollTop = previewElt.scrollTop
+    var scrollTo
+    if (isScrollEditor) {
+      // Scroll the preview
+      isScrollEditor = false
+      editorScrollTop += clEditorSvc.scrollOffset
+      sectionDescList.cl_some(function (sectionDesc) {
+        if (editorScrollTop < sectionDesc.editorDimension.endOffset) {
+          var posInSection = (editorScrollTop - sectionDesc.editorDimension.startOffset) / (sectionDesc.editorDimension.height || 1)
+          scrollTo = sectionDesc.previewDimension.startOffset + sectionDesc.previewDimension.height * posInSection - clEditorSvc.scrollOffset
+          return true
+        }
+      })
+      scrollTo = Math.min(
+        scrollTo,
+        previewElt.scrollHeight - previewElt.offsetHeight
+      )
+
+      throttle(function () {
+        clearTimeout(previewFinishTimeoutId)
+        previewElt.clanim
+          .scrollTop(scrollTo)
+          .duration(!localSkipAnimation && 100)
+          .start(function () {
+            previewFinishTimeoutId = setTimeout(function () {
+              isPreviewMoving = false
+            }, 100)
+          }, function () {
+            isPreviewMoving = true
+          })
+      }, localSkipAnimation ? 500 : 10)
+    } else if (/*!clEditorLayoutSvc.isEditorOpen || */isScrollPreview) {
+      // Scroll the editor
+      isScrollPreview = false
+      previewScrollTop += clEditorSvc.scrollOffset
+      sectionDescList.cl_some(function (sectionDesc) {
+        if (previewScrollTop < sectionDesc.previewDimension.endOffset) {
+          var posInSection = (previewScrollTop - sectionDesc.previewDimension.startOffset) / (sectionDesc.previewDimension.height || 1)
+          scrollTo = sectionDesc.editorDimension.startOffset + sectionDesc.editorDimension.height * posInSection - clEditorSvc.scrollOffset
+          return true
+        }
+      })
+      scrollTo = Math.min(
+        scrollTo,
+        editorElt.scrollHeight - editorElt.offsetHeight
+      )
+
+      throttle(function () {
+        clearTimeout(editorFinishTimeoutId)
+        editorElt.clanim
+          .scrollTop(scrollTo)
+          .duration(!localSkipAnimation && 100)
+          .start(function () {
+            editorFinishTimeoutId = setTimeout(function () {
+              isEditorMoving = false
+            }, 100)
+          }, function () {
+            isEditorMoving = true
+          })
+      }, localSkipAnimation ? 500 : 10)
+    }
+  }
+
+  var oldEditorElt, oldPreviewElt
+  var isPreviewRefreshing
+
+  function init () {
+    if (oldEditorElt === editorElt || oldPreviewElt === previewElt) {
+      return
+    }
+    oldEditorElt = editorElt
+    oldPreviewElt = previewElt
+
+    editorElt.addEventListener('scroll', function () {
+      if (isEditorMoving) {
+        return
+      }
+      isScrollEditor = true
+      isScrollPreview = false
+      doScrollSync()
+    })
+
+    previewElt.addEventListener('scroll', function () {
+      if (isPreviewMoving || isPreviewRefreshing) {
+        return
+      }
+      isScrollPreview = true
+      isScrollEditor = false
+      doScrollSync()
+    })
+  }
+
+  var previewHeight, previewContentElt, timeoutId
+
+  clScrollSyncSvc = {
+    setEditorElt: function (elt) {
+      editorElt = elt
+      init()
+    },
+    setPreviewElt: function (elt) {
+      previewElt = elt
+      previewContentElt = previewElt.children[0]
+      init()
+    },
+    onContentChanged: function () {
+      clearTimeout(timeoutId)
+      isPreviewRefreshing = true
+      sectionDescList = undefined
+    },
+    savePreviewHeight: function () {
+      previewHeight = previewContentElt.offsetHeight
+      previewContentElt.style.height = previewHeight + 'px'
+    },
+    restorePreviewHeight: function () {
+      // Now set the correct height
+      previewContentElt.style.removeProperty('height')
+      isScrollEditor = /*clEditorLayoutSvc.isEditorOpen*/true
+      // A preview scrolling event can occur if height is smaller
+      timeoutId = setTimeout(function () {
+        isPreviewRefreshing = false
+      }, 100)
+    },
+    onPanelResized: function () {
+      // This could happen before the editor/preview panels are created
+      if (!editorElt) {
+        return
+      }
+      isScrollEditor = /*clEditorLayoutSvc.isEditorOpen*/true
+    },
+    onPreviewOpen: function () {
+      isScrollEditor = true
+      isScrollPreview = false
+      skipAnimation = true
+    },
+    updateSectionDescList: function () {
+      sectionDescList = clEditorSvc.sectionDescList
+    },
+    forceScrollSync: function () {
+      if (isPreviewRefreshing) {
+        return
+      }
+      doScrollSync()
+    }
+  }
+
+  // init editor
+  clScrollSyncSvc.setEditorElt(editorElt)
+  clEditorSvc.addWatchListener(function(a) {a == 'sectionList' && clScrollSyncSvc.onContentChanged()})
+
+  // init preview
+  clScrollSyncSvc.setPreviewElt(previewElt)
+  clEditorSvc.addWatchListener(function(a) {a == 'lastConversion' && clScrollSyncSvc.savePreviewHeight()})
+  clEditorSvc.addWatchListener(function(a) {a == 'lastPreviewRefreshed' && clScrollSyncSvc.restorePreviewHeight()})
+  clEditorSvc.addWatchListener(function(a) {
+    a == 'lastSectionMeasured' && function () {
+    clScrollSyncSvc.updateSectionDescList()
+    clScrollSyncSvc.forceScrollSync()
+  }()})
+}
 ;var editorElt = document.querySelector('.editor')
 var editorInnerElt = document.querySelector('.editor__inner')
 clEditorSvc.initConverter();
@@ -20562,6 +20944,7 @@ var debouncedEditorChanged = $window.cledit.Utils.debounce(function () {
   }
   if (clEditorSvc.sectionList !== newSectionList) {
     clEditorSvc.sectionList = newSectionList
+    clEditorSvc.triggerWatchAction('sectionList');
     state ? debouncedRefreshPreview() : refreshPreview()
   }
   clEditorSvc.selectionRange = newSelectionRange
@@ -20592,6 +20975,23 @@ clEditorSvc.cledit.on('contentChanged', function (content, sectionList) {
   newSectionList = sectionList
   debouncedEditorChanged()
 })
+
+function onPreviewRefreshed (refreshed) {
+  if (refreshed && !clEditorSvc.lastSectionMeasured) {
+    clEditorSvc.measureSectionDimensions()
+  } else {
+    debouncedMeasureSectionDimension()
+  }
+}
+
+var debouncedMeasureSectionDimension = $window.cledit.Utils.debounce(function () {
+  if (!isDestroyed()) {
+    clEditorSvc.measureSectionDimensions()
+    // scope.$apply()
+  }
+}, 500)
+
+clEditorSvc.addWatchListener(function(a) {a == 'lastPreviewRefreshed' && onPreviewRefreshed()})
 
 clEditorSvc.initCledit(clEditorSvc.options);
 
@@ -20625,6 +21025,11 @@ Keystrokes(clEditorSvc);
     }
   })
 })();
+
+
+// Scroll Sync
+
+ScrollSync(clEditorSvc, document.querySelector('.editor'), document.querySelector('.preview'))
 
 
 // Content

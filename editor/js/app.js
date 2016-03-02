@@ -27,6 +27,7 @@ var debouncedEditorChanged = $window.cledit.Utils.debounce(function () {
   }
   if (clEditorSvc.sectionList !== newSectionList) {
     clEditorSvc.sectionList = newSectionList
+    clEditorSvc.triggerWatchAction('sectionList');
     state ? debouncedRefreshPreview() : refreshPreview()
   }
   clEditorSvc.selectionRange = newSelectionRange
@@ -57,6 +58,23 @@ clEditorSvc.cledit.on('contentChanged', function (content, sectionList) {
   newSectionList = sectionList
   debouncedEditorChanged()
 })
+
+function onPreviewRefreshed (refreshed) {
+  if (refreshed && !clEditorSvc.lastSectionMeasured) {
+    clEditorSvc.measureSectionDimensions()
+  } else {
+    debouncedMeasureSectionDimension()
+  }
+}
+
+var debouncedMeasureSectionDimension = $window.cledit.Utils.debounce(function () {
+  if (!isDestroyed()) {
+    clEditorSvc.measureSectionDimensions()
+    // scope.$apply()
+  }
+}, 500)
+
+clEditorSvc.addWatchListener(function(a) {a == 'lastPreviewRefreshed' && onPreviewRefreshed()})
 
 clEditorSvc.initCledit(clEditorSvc.options);
 
@@ -90,6 +108,11 @@ Keystrokes(clEditorSvc);
     }
   })
 })();
+
+
+// Scroll Sync
+
+ScrollSync(clEditorSvc, document.querySelector('.editor'), document.querySelector('.preview'))
 
 
 // Content

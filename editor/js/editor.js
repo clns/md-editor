@@ -78,6 +78,8 @@ var diffMatchPatch = new $window.diff_match_patch() // eslint-disable-line new-c
 var parsingCtx, conversionCtx,
   tokens
 
+var watchListeners = [];
+
 var clEditorSvc = {
 	lastExternalChange: 0,
   scrollOffset: 80,
@@ -189,6 +191,17 @@ var clEditorSvc = {
       }
       return clEditorSvc.cledit.setContent(content, isExternal)
     }
+  },
+  addWatchListener: function(cb) {
+    watchListeners.push(cb);
+    this.watchListeners = watchListeners;
+  },
+  triggerWatchAction: function(action) {
+    if (this.watchListeners) {
+      this.watchListeners.forEach(function(cb) {
+        cb.call(this, action);
+      }, this);
+    }
   }
 };
 
@@ -237,6 +250,7 @@ clEditorSvc.convert = function () {
     htmlSectionDiff: htmlSectionDiff
   }
   clEditorSvc.lastConversion = Date.now()
+  clEditorSvc.triggerWatchAction('lastConversion');
 }
 
 var anchorHash = {}
@@ -348,6 +362,7 @@ function runAsyncPreview () {
     clEditorSvc.previewHtml = html.replace(/^\s+|\s+$/g, '')
     clEditorSvc.previewText = previewElt.textContent
     clEditorSvc.lastPreviewRefreshed = Date.now()
+    clEditorSvc.triggerWatchAction('lastPreviewRefreshed');
     debouncedTextToPreviewDiffs()
     // $rootScope.$apply()
   }
@@ -520,9 +535,10 @@ clEditorSvc.measureSectionDimensions = function () {
 
   normalizeEditorDimensions()
   normalizePreviewDimensions()
-  normalizeTocDimensions()
+  // normalizeTocDimensions()
 
   clEditorSvc.lastSectionMeasured = Date.now()
+  clEditorSvc.triggerWatchAction('lastSectionMeasured')
 }
 
 clEditorSvc.scrollToAnchor = function (anchor) {

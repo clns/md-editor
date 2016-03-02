@@ -34,6 +34,8 @@ gulp.task('debug', function () {
 })
 
 var appVendorJs = [
+  'bezier-easing/build', // required by clanim
+  'clanim/clanim',
   'googlediff/javascript/diff_match_patch_uncompressed', // Needs to come before cldiffutils and cledit
   'clunderscore/clunderscore', // Needs to come before cledit
   'cldiffutils/cldiffutils',
