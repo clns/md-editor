@@ -2444,7 +2444,7 @@ this['DIFF_EQUAL'] = DIFF_EQUAL;
   }
 
   function applyFlattenedObjectPatchesReverse (obj, patches) {
-    patches && patches.slice().reverse().cl_each(function (patch) {
+    patches && patches.cl_each(function (patch) {
       if (patch.d) {
         obj[patch.k] = patch.d
       } else if (patch.a) {
@@ -2466,7 +2466,7 @@ this['DIFF_EQUAL'] = DIFF_EQUAL;
   }
 
   function applyFlattenedTextPatchesReverse (text, patches) {
-    return (patches || []).slice().reverse().cl_reduce(function (text, patch) {
+    return (patches || []).cl_reduce(function (text, patch) {
       if (patch.d) {
         return text.slice(0, patch.o).concat(patch.d).concat(text.slice(patch.o))
       } else if (patch.a) {
@@ -20623,4 +20623,10 @@ previewElt.addEventListener('click', function (evt) {
   }
 })
 
+
+// Content
+
+$.get('issue.md', function(data) {
+  clEditorSvc.setContent(data)
+})
 //# sourceMappingURL=app-min.js.map

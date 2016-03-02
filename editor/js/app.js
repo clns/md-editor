@@ -88,3 +88,10 @@ previewElt.addEventListener('click', function (evt) {
     elt = elt.parentNode
   }
 })
+
+
+// Content
+
+$.get('issue.md', function(data) {
+  clEditorSvc.setContent(data)
+})
