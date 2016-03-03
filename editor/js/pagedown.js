@@ -1,4 +1,4 @@
-var clPagedown = function() {
+var clPagedown = function(opts) {
 
 	var util = {},
 		re = window.RegExp,
@@ -1312,5 +1312,5 @@ var clPagedown = function() {
 		chunk.skipLines(2, 1, true);
 	};
 
-	return new Pagedown(options);
+	return new Pagedown(opts);
 }

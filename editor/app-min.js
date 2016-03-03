@@ -19408,7 +19408,7 @@ clEditorSvc.getPandocAst = function () {
   })
 
 })()
-;var clPagedown = function() {
+;var clPagedown = function(opts) {
 
 	var util = {},
 		re = window.RegExp,
@@ -20722,7 +20722,7 @@ clEditorSvc.getPandocAst = function () {
 		chunk.skipLines(2, 1, true);
 	};
 
-	return new Pagedown(options);
+	return new Pagedown(opts);
 }
 ;var ScrollSync = function(clEditorSvc, editorElt, previewElt) {
   var
